@@ -31,12 +31,13 @@
 			if (feature.properties ) {
 				popupContent = "<table>"
 				$.each(feature.properties, function(key, value){
-					popupContent += "<tr><td><strong>" + key + "</strong></td>" + "<td>" + value + "</td></tr>"
+					if (value !== "")
+						popupContent += "<tr><td><strong>" + key + "</strong></td>" + "<td>" + value + "</td></tr>"
 				})
 				popupContent += "</table>"
 			}
 
-			layer.bindPopup(popupContent);
+			layer.bindPopup(popupContent, null, {maxHeight: 80});
 		}
 		var geojson;
 		$.getJSON('data.geojson',function(data){
