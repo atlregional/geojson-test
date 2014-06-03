@@ -40,7 +40,8 @@
 			layer.bindPopup(popupContent, null, {maxHeight: 80});
 		}
 		var geojson;
-		$.getJSON('data.geojson',function(data){
+		var url = 'http://arc.garc.opendata.arcgis.com/datasets/705b84afdefe4ce6ab625f05f289d4b5_8.geojson';
+		$.getJSON('http://jsonp.jit.su/?callback=?&url=' + url,function(data){
 			console.log(data);
 			geojson = data;
 			L.geoJson(geojson, {
