@@ -31,7 +31,7 @@
 			if (feature.properties ) {
 				popupContent = "<table>"
 				$.each(feature.properties, function(key, value){
-					if (key === "Time" || key === "TELEPHONE" || key === "ADDRESS" || key === "CITY")
+					if (key === "Time" || key === "NAME" || key === "TELEPHONE" || key === "ADDRESS" || key === "CITY")
 						popupContent += "<tr><td><strong>" + key + "</strong></td>" + "<td>" + value + "</td></tr>"
 				})
 				popupContent += "</table>"
@@ -72,6 +72,31 @@
 
 			}
 		});
+		var hospitals;
+		var url = 'http://arc.garc.opendata.arcgis.com/datasets/705b84afdefe4ce6ab625f05f289d4b5_8.geojson'; // add url for arc.garc.opendata.arcgis.com here
+		$.getJSON('http://jsonp.jit.su/?callback=?&url=' + url,function(data){
+			console.log(data);
+			hospitals = data;
+			L.geoJson(hospitals, {
+
+				style: function (feature) {
+					return feature.properties && feature.properties.style;
+				},
+
+				onEachFeature: onEachFeature,
+
+				pointToLayer: function (feature, latlng) {
+					return L.circleMarker(latlng, {
+						radius: 8,
+						fillColor: "#ff7800",
+						color: "#000",
+						weight: 1,
+						opacity: 1,
+						fillOpacity: 0.8
+					});
+				}
+			}).addTo(map);
+		})
 
 		
 
