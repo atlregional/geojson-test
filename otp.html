@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet GeoJSON Example</title>
+	<meta charset="utf-8" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="leaflet.css" />
+</head>
+<body>
+	<div id="map" style="width: 600px; height: 400px"></div>
+	<script src="jquery.min.js"></script>
+	<script src="leaflet.js"></script>
+
+	<script>
+		var map = L.map('map').setView([33.748893261983575, -84.38667297363281], 13);
+
+		L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+			id: 'examples.map-20v6611k'
+		}).addTo(map);
+
+		function onEachFeature(feature, layer) {
+			var popupContent = "<p>I started out as a GeoJSON " +
+					feature.geometry.type + ", but now I'm a Leaflet vector!</p>";
+
+			if (feature.properties ) {
+				popupContent = "<table>"
+				$.each(feature.properties, function(key, value){
+					if (key === "Time" || key === "TELEPHONE" || key === "ADDRESS" || key === "CITY")
+						popupContent += "<tr><td><strong>" + key + "</strong></td>" + "<td>" + value + "</td></tr>"
+				})
+				popupContent += "</table>"
+			}
+
+			layer.bindPopup(popupContent, null, {maxHeight: 80});
+		}
+		var geojson;
+		$.ajax({
+			type: 'GET',
+			dataType: 'jsonp',
+			url: 'http://opentrip.atlantaregion.com/otp-rest-servlet/ws/isochrone?algorithm%20=accSampling&fromPlace=33.7583,-84.3786&date=2014/06/16&time=12:00:00&maxWalkDistance=1000&mode=WALK,TRANSIT&cutoffSec=1800&cutoffSec=3600',
+			success: function(data){
+				console.log(data);
+				geojson = data;
+				L.geoJson(geojson, {
+
+					style: function (feature) {
+						switch (feature.properties.Time) {
+				            case 1800: return {fillColor: "#ff0000"};
+				            case 3600:   return {fillColor: "#0000ff"};
+				        }
+					},
+
+					onEachFeature: onEachFeature,
+
+					pointToLayer: function (feature, latlng) {
+						return L.circleMarker(latlng, {
+							radius: 8,
+							fillColor: "#ff7800",
+							color: "#000",
+							weight: 1,
+							opacity: 1,
+							fillOpacity: 0.8
+						});
+					}
+				}).addTo(map);
+
+			}
+		});
+
+		
+
+	</script>
+</body>
+</html>
