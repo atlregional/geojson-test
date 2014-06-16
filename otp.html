@@ -15,7 +15,8 @@
 
 	<script>
 		var map = L.map('map').setView([33.748893261983575, -84.38667297363281], 13);
-
+		var geojson;
+		var geoLayer;
 		L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
 			maxZoom: 18,
 			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
@@ -27,7 +28,46 @@
 		function onEachFeature(feature, layer) {
 			var popupContent = "<p>I started out as a GeoJSON " +
 					feature.geometry.type + ", but now I'm a Leaflet vector!</p>";
+			layer.on({
+				click: function(e){
+					console.log(e.target._latlng)
+					console.log(geoLayer)
 
+					if(typeof geoLayer !== 'undefined') map.removeLayer( geoLayer )
+				$.ajax({
+					type: 'GET',
+					dataType: 'jsonp',
+					url: 'http://opentrip.atlantaregion.com/otp-rest-servlet/ws/isochrone?algorithm%20=accSampling&fromPlace='+e.target._latlng.lat + ',' + e.target._latlng.lng+'&date=2014/06/16&time=12:00:00&maxWalkDistance=1000&mode=WALK,TRANSIT&cutoffSec=1800&cutoffSec=3600',
+					success: function(data){
+						console.log(data);
+						geojson = data;
+						geoLayer = L.geoJson(geojson, {
+
+							style: function (feature) {
+								switch (feature.properties.Time) {
+						            case 1800: return {fillColor: "#ff0000", weight: 0};
+						            case 3600:   return {fillColor: "#0000ff", weight: 0};
+						        }
+							},
+
+							onEachFeature: onEachFeature,
+
+							pointToLayer: function (feature, latlng) {
+								return L.circleMarker(latlng, {
+									radius: 8,
+									fillColor: "#ff7800",
+									color: "#000",
+									weight: 1,
+									opacity: 1,
+									fillOpacity: 0.8
+								});
+							}
+						}).addTo(map);
+
+					}
+				});
+				}
+			});
 			if (feature.properties ) {
 				popupContent = "<table>"
 				$.each(feature.properties, function(key, value){
@@ -39,39 +79,7 @@
 
 			layer.bindPopup(popupContent, null, {maxHeight: 80});
 		}
-		var geojson;
-		$.ajax({
-			type: 'GET',
-			dataType: 'jsonp',
-			url: 'http://opentrip.atlantaregion.com/otp-rest-servlet/ws/isochrone?algorithm%20=accSampling&fromPlace=33.7583,-84.3786&date=2014/06/16&time=12:00:00&maxWalkDistance=1000&mode=WALK,TRANSIT&cutoffSec=1800&cutoffSec=3600',
-			success: function(data){
-				console.log(data);
-				geojson = data;
-				L.geoJson(geojson, {
-
-					style: function (feature) {
-						switch (feature.properties.Time) {
-				            case 1800: return {fillColor: "#ff0000", weight: 0};
-				            case 3600:   return {fillColor: "#0000ff", weight: 0};
-				        }
-					},
-
-					onEachFeature: onEachFeature,
-
-					pointToLayer: function (feature, latlng) {
-						return L.circleMarker(latlng, {
-							radius: 8,
-							fillColor: "#ff7800",
-							color: "#000",
-							weight: 1,
-							opacity: 1,
-							fillOpacity: 0.8
-						});
-					}
-				}).addTo(map);
-
-			}
-		});
+		
 		var hospitals;
 		var url = 'http://arc.garc.opendata.arcgis.com/datasets/705b84afdefe4ce6ab625f05f289d4b5_8.geojson'; // add url for arc.garc.opendata.arcgis.com here
 		$.getJSON('http://jsonp.jit.su/?callback=?&url=' + url,function(data){
